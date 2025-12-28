@@ -10,5 +10,5 @@ pub enum Element {
 pub struct HTMLElement {
     pub name: String,
     pub attributes: HashMap<String, String>,
-    // pub children: Vec<Element>,
+    pub children: Vec<Element>,
 }
