@@ -1,14 +1,9 @@
 use rsx_macro::rsx;
 
-fn component() -> rsx::Element {
-    return rsx!(
-        <h1></h1>
-    );
-}
-
 fn main() {
+    let name = 0;
     let element = rsx! (
-        <h2 name="value">Hello World</h2>
+        <h2 name="value">Hello {name} {name}</h2>
     );
     println!("{:#?}", element);
 }
