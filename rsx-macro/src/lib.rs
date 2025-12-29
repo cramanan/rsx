@@ -113,7 +113,7 @@ impl ToTokens for Node {
 
                 tokens.extend(quote! {
                     rsx::HTMLElement {
-                        name: #name.to_string(),
+                        name: String::from(#name),
                         attributes: std::collections::HashMap::from([#(#attributes),*]),
                         children: vec![#(#children),*],
                     }
