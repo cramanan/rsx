@@ -36,8 +36,12 @@ impl Parse for Node {
                         return Err(input.error(format!("duplicate attribute: {}", name)));
                     }
 
-                    input.parse::<Token![=]>()?;
-                    let value = input.parse::<LitStr>()?; // Parse attribute value
+                    // Parse attribute value
+                    let value = if input.parse::<Token![=]>().is_ok() {
+                        input.parse::<LitStr>()?
+                    } else {
+                        LitStr::new(&true.to_string(), proc_macro2::Span::call_site())
+                    };
                     attributes.insert(name, value);
                 }
                 attributes

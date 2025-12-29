@@ -23,9 +23,12 @@ dependencies = [
 [[package]]
 name = "rsx"
 version = "0.1.0"
+dependencies = [
+ "rsx-macros",
+]
 
 [[package]]
-name = "rsx-macro"
+name = "rsx-macros"
 version = "0.1.0"
 dependencies = [
  "proc-macro2",

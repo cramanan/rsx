@@ -1,8 +1,0 @@
-[package]
-name = "rsx-example"
-version = "0.1.0"
-edition = "2024"
-
-[dependencies]
-rsx = { path = "../rsx" }
-rsx-macro = { path = "../rsx-macro" }

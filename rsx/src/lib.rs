@@ -1,4 +1,6 @@
-use std::{collections::HashMap, fmt::Debug};
+pub use rsx_macros::*;
+
+use std::{collections::HashMap, fmt::Debug, ops::Deref};
 
 pub trait RSX {
     fn render(&self) -> String;
@@ -16,7 +18,7 @@ impl RSX for HTMLElement {
     }
 }
 
-type Element = Box<dyn RSX>;
+pub type Element = Box<dyn RSX>;
 
 impl Debug for Element {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -26,7 +28,7 @@ impl Debug for Element {
 
 impl RSX for Element {
     fn render(&self) -> String {
-        self.as_ref().render()
+        self.deref().render()
     }
 }
 
