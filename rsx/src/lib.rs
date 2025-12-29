@@ -1,44 +1,46 @@
 pub use rsx_macros::*;
 
-use std::{collections::HashMap, fmt::Debug, ops::Deref};
+use std::collections::HashMap;
+
+pub enum Node {
+    HTMLElement(HTMLElement),
+    Text(String),
+}
 
 pub trait RSX {
-    fn render(&self) -> String;
+    fn as_node(&self) -> Node;
+    fn as_element(&self) -> Element;
 }
 
 impl RSX for HTMLElement {
-    fn render(&self) -> String {
-        let children = self
-            .children
-            .iter()
-            .map(RSX::render)
-            .collect::<Vec<_>>()
-            .join(" ");
-        format!("<{}>{}</{}>", self.name, children, self.name)
+    fn as_node(&self) -> Node {
+        Node::HTMLElement(self.clone())
+    }
+
+    fn as_element(&self) -> Element {
+        Box::new(self.clone())
     }
 }
 
 pub type Element = Box<dyn RSX>;
 
-impl Debug for Element {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.render())
-    }
-}
-
-impl RSX for Element {
-    fn render(&self) -> String {
-        self.deref().render()
+impl Clone for Element {
+    fn clone(&self) -> Self {
+        self.as_element()
     }
 }
 
 impl RSX for String {
-    fn render(&self) -> String {
-        self.clone()
+    fn as_node(&self) -> Node {
+        Node::Text(self.to_owned())
+    }
+
+    fn as_element(&self) -> Element {
+        Box::new(self.clone())
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone)]
 pub struct HTMLElement {
     pub name: String,
     pub attributes: HashMap<String, String>,

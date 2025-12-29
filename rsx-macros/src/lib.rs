@@ -86,15 +86,15 @@ impl Parse for Node {
             braced!(content in input);
             Ok(Node::Expression(content.parse()?))
         } else {
-            let mut text = String::new();
+            let mut text = Vec::new();
 
             while !input.is_empty() && !input.peek(Brace) && !input.peek(Token![<]) {
                 let tt = input.parse::<proc_macro2::TokenTree>()?;
-                text.push_str(&tt.to_string());
+                text.push(tt.to_string());
             }
 
             Ok(Node::Text(LitStr::new(
-                text.trim(),
+                &text.join(" "),
                 proc_macro2::Span::call_site(),
             )))
         }
@@ -113,7 +113,7 @@ impl ToTokens for Node {
                 let children = element
                     .children
                     .iter()
-                    .map(|c| quote! { Box::new(#c) as Box<dyn rsx::RSX> });
+                    .map(|c| quote! { rsx::RSX::as_element(&#c) });
 
                 tokens.extend(quote! {
                     rsx::HTMLElement {
@@ -124,10 +124,7 @@ impl ToTokens for Node {
                 });
             }
             Node::Text(text) => tokens.extend(quote! {String::from(#text)}),
-            Node::Expression(expression) => tokens.extend(quote! { {
-                use rsx::RSX;
-                #expression.to_string().render()
-            } }),
+            Node::Expression(expression) => tokens.extend(quote! {#expression}),
         }
     }
 }
@@ -135,5 +132,6 @@ impl ToTokens for Node {
 #[proc_macro]
 pub fn rsx(input: TokenStream) -> TokenStream {
     let node = parse_macro_input!(input as Node);
-    quote! {{ #node }}.into()
+    let generated = quote! {{ #node }}.into();
+    generated
 }

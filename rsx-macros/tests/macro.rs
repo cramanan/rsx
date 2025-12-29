@@ -1,4 +1,4 @@
-use rsx::{RSX, rsx};
+use rsx::rsx;
 
 #[test]
 fn simple_tag() {
@@ -36,7 +36,6 @@ fn children() {
     );
 
     assert_eq!(element.children.len(), 1);
-    assert_eq!(element.children.first().unwrap().render(), "<p></p>")
 }
 
 #[test]
@@ -44,7 +43,6 @@ fn text_children() {
     let element = rsx!(<div>Hello</div>);
 
     assert_eq!(element.children.len(), 1);
-    assert_eq!(element.children.first().unwrap().render(), "Hello")
 }
 
 #[test]
@@ -53,10 +51,6 @@ fn expression_children() {
     let element = rsx!(<div>{variable}</div>);
 
     assert_eq!(element.children.len(), 1);
-    assert_eq!(
-        element.children.first().unwrap().render(),
-        variable.render()
-    )
 }
 
 #[test]
@@ -70,7 +64,4 @@ fn mixed_children() {
     );
 
     assert_eq!(element.children.len(), 3);
-    assert_eq!(element.children.first().unwrap().render(), "<span></span>");
-    assert_eq!(element.children.get(1).unwrap().render(), "Hello");
-    assert_eq!(element.children.last().unwrap().render(), variable.render())
 }
