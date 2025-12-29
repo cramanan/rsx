@@ -106,19 +106,24 @@ impl ToTokens for Node {
                     let name = LitStr::new(&name.to_string(), name.span());
                     quote! {( String::from(#name), String::from(#value))}
                 });
-                let children = &element.children;
+                let children = element
+                    .children
+                    .iter()
+                    .map(|c| quote! { Box::new(#c) as Box<dyn rsx::RSX> });
+
                 tokens.extend(quote! {
-                    rsx::Element::Element(rsx::HTMLElement {
+                    rsx::HTMLElement {
                         name: #name.to_string(),
                         attributes: std::collections::HashMap::from([#(#attributes),*]),
                         children: vec![#(#children),*],
-                    })
+                    }
                 });
             }
-            Node::Text(text) => tokens.extend(quote! {rsx::Element::Text(String::from(#text))}),
-            Node::Expression(expression) => {
-                tokens.extend(quote! { rsx::Element::Text(#expression.to_string()) })
-            }
+            Node::Text(text) => tokens.extend(quote! {String::from(#text)}),
+            Node::Expression(expression) => tokens.extend(quote! { {
+                use rsx::RSX;
+                #expression.to_string().render()
+            } }),
         }
     }
 }
