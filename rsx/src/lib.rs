@@ -6,7 +6,27 @@ pub trait RSX {
 
 impl RSX for HTMLElement {
     fn render(&self) -> String {
-        format!("<{}>...</{}>", self.name, self.name)
+        let children = self
+            .children
+            .iter()
+            .map(RSX::render)
+            .collect::<Vec<_>>()
+            .join(" ");
+        format!("<{}>{}</{}>", self.name, children, self.name)
+    }
+}
+
+type Element = Box<dyn RSX>;
+
+impl Debug for Element {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.render())
+    }
+}
+
+impl RSX for Element {
+    fn render(&self) -> String {
+        self.as_ref().render()
     }
 }
 
@@ -16,21 +36,9 @@ impl RSX for String {
     }
 }
 
+#[derive(Debug)]
 pub struct HTMLElement {
     pub name: String,
     pub attributes: HashMap<String, String>,
-    pub children: Vec<Box<dyn RSX>>,
-}
-
-impl Debug for HTMLElement {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("HTMLElement")
-            .field("name", &self.name)
-            .field("attributes", &self.attributes)
-            .field(
-                "children",
-                &self.children.iter().map(|e| e.render()).collect::<Vec<_>>(),
-            )
-            .finish()
-    }
+    pub children: Vec<Element>,
 }
