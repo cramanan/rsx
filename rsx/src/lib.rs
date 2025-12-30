@@ -1,48 +1,28 @@
+pub mod component;
+
 pub use rsx_macros::*;
 
 use std::collections::HashMap;
 
-pub enum Node {
+pub enum Element {
     HTMLElement(HTMLElement),
     Text(String),
 }
 
-pub trait RSX {
-    fn as_node(&self) -> Node;
-    fn as_element(&self) -> Element;
-}
-
-impl RSX for HTMLElement {
-    fn as_node(&self) -> Node {
-        Node::HTMLElement(self.clone())
-    }
-
-    fn as_element(&self) -> Element {
-        Box::new(self.clone())
+impl From<String> for Element {
+    fn from(value: String) -> Self {
+        Element::Text(value)
     }
 }
 
-pub type Element = Box<dyn RSX>;
-
-impl Clone for Element {
-    fn clone(&self) -> Self {
-        self.as_element()
+impl From<HTMLElement> for Element {
+    fn from(value: HTMLElement) -> Self {
+        Element::HTMLElement(value)
     }
 }
 
-impl RSX for String {
-    fn as_node(&self) -> Node {
-        Node::Text(self.to_owned())
-    }
+pub type EventHandler = Box<dyn FnMut(web_sys::Event)>;
 
-    fn as_element(&self) -> Element {
-        Box::new(self.clone())
-    }
-}
-
-pub type EventHandler = std::rc::Rc<dyn Fn()>;
-
-#[derive(Clone)]
 pub struct HTMLElement {
     pub name: String,
     pub attributes: HashMap<String, String>,

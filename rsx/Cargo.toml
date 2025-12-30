@@ -4,4 +4,5 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-rsx-macros = { path = "../rsx-macros" }
+rsx-macros = { path = "../macros" }
+web-sys = { version = "0.3.83", features = ["Event"] }

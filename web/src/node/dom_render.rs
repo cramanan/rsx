@@ -20,8 +20,7 @@ impl From<rsx::Element> for DomNode {
                 }
 
                 for (name, listener) in element.event_handlers {
-                    let closure =
-                        Closure::wrap(Box::new(|event| listener(event)) as Box<dyn FnMut(_)>);
+                    let closure = Closure::wrap(listener);
                     el.add_event_listener_with_callback(&name, closure.as_ref().unchecked_ref())
                         .unwrap();
                     closure.forget();

@@ -107,10 +107,7 @@ impl Parse for Node {
                 text.push(tt.to_string());
             }
 
-            Ok(Node::Text(LitStr::new(
-                &text.join(" "),
-                proc_macro2::Span::call_site(),
-            )))
+            Ok(Node::Text(LitStr::new(&text.join(" "), input.span())))
         }
     }
 }
@@ -124,10 +121,12 @@ impl ToTokens for Node {
                     let name = LitStr::new(&name.to_string(), name.span());
                     quote! {( String::from(#name), String::from(#value))}
                 });
+
                 let event_handlers = element.event_listeners.iter().map(|(name, expr)| {
                     let name = LitStr::new(&name.to_string(), name.span());
-                    quote! {( String::from(#name), std::rc::Rc::new(#expr) as rsx::EventHandler)}
+                    quote! {( String::from(#name), Box::new(#expr) as rsx::EventHandler)}
                 });
+
                 let children = element
                     .children
                     .iter()
