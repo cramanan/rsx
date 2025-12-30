@@ -40,9 +40,12 @@ impl RSX for String {
     }
 }
 
+pub type EventHandler = std::rc::Rc<dyn Fn()>;
+
 #[derive(Clone)]
 pub struct HTMLElement {
     pub name: String,
     pub attributes: HashMap<String, String>,
+    pub event_handlers: HashMap<String, EventHandler>,
     pub children: Vec<Element>,
 }

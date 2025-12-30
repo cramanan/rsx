@@ -65,3 +65,27 @@ fn mixed_children() {
 
     assert_eq!(element.children.len(), 3);
 }
+
+#[test]
+fn event_listeners() {
+    use std::cell::RefCell;
+    use std::rc::Rc;
+
+    // Shared state to track if the handler was called
+    let called = Rc::new(RefCell::new(false));
+    let called_clone = called.clone();
+
+    let onclick = move || {
+        *called_clone.borrow_mut() = true;
+    };
+
+    let element = rsx!(<button name="value" onclick={onclick}>Click</button>);
+
+    // Simulate event
+    if let Some(handler) = element.event_handlers.get("onclick") {
+        handler(); // Call the handler
+    }
+
+    // Assert the handler ran
+    assert!(*called.borrow());
+}

@@ -14,6 +14,7 @@ enum Node {
 struct Element {
     name: Ident,
     attributes: HashMap<Ident, LitStr>,
+    event_listeners: HashMap<Ident, Expr>,
     children: Vec<Node>,
 }
 
@@ -24,27 +25,35 @@ impl Parse for Node {
             let name = input.parse::<Ident>()?;
 
             // Parse attributes
-            let attributes = {
+            let (attributes, event_listeners) = {
                 let mut attributes = HashMap::new();
+                let mut event_listeners = HashMap::new();
                 // While closing tokens are not reached
                 while !input.peek(Token![>]) && !input.peek(Token![/]) {
                     // Parse attribute identifier
                     let name = input.parse::<Ident>()?;
 
-                    // Check for duplicates to avoid overwriting
-                    if attributes.contains_key(&name) {
-                        return Err(input.error(format!("duplicate attribute: {}", name)));
-                    }
-
-                    // Parse attribute value
-                    let value = if input.parse::<Token![=]>().is_ok() {
-                        input.parse::<LitStr>()?
+                    if name.to_string().starts_with("on") {
+                        input.parse::<Token![=]>()?;
+                        let content;
+                        braced!(content in input);
+                        event_listeners.insert(name, content.parse::<Expr>()?);
                     } else {
-                        LitStr::new(&true.to_string(), proc_macro2::Span::call_site())
-                    };
-                    attributes.insert(name, value);
+                        // Check for duplicates to avoid overwriting
+                        if attributes.contains_key(&name) {
+                            return Err(input.error(format!("duplicate attribute: {}", name)));
+                        }
+
+                        // Parse attribute value
+                        let value = if input.parse::<Token![=]>().is_ok() {
+                            input.parse::<LitStr>()?
+                        } else {
+                            LitStr::new(&true.to_string(), proc_macro2::Span::call_site())
+                        };
+                        attributes.insert(name, value);
+                    }
                 }
-                attributes
+                (attributes, event_listeners)
             };
 
             // Parse children depending on whether the tag is self-closing
@@ -79,6 +88,7 @@ impl Parse for Node {
             Ok(Node::Element(Element {
                 name,
                 attributes,
+                event_listeners,
                 children,
             }))
         } else if input.peek(Brace) {
@@ -110,6 +120,10 @@ impl ToTokens for Node {
                     let name = LitStr::new(&name.to_string(), name.span());
                     quote! {( String::from(#name), String::from(#value))}
                 });
+                let event_handlers = element.event_listeners.iter().map(|(name, expr)| {
+                    let name = LitStr::new(&name.to_string(), name.span());
+                    quote! {( String::from(#name), std::rc::Rc::new(#expr) as rsx::EventHandler)}
+                });
                 let children = element
                     .children
                     .iter()
@@ -119,6 +133,7 @@ impl ToTokens for Node {
                     rsx::HTMLElement {
                         name: String::from(#name),
                         attributes: std::collections::HashMap::from([#(#attributes),*]),
+                        event_handlers: std::collections::HashMap::from([#(#event_handlers),*]),
                         children: vec![#(#children),*],
                     }
                 });
@@ -133,5 +148,6 @@ impl ToTokens for Node {
 pub fn rsx(input: TokenStream) -> TokenStream {
     let node = parse_macro_input!(input as Node);
     let generated = quote! {{ #node }}.into();
+    // panic!("{}", &generated);
     generated
 }
