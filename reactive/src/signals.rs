@@ -34,7 +34,7 @@ pub fn create_signal<T>(value: T) -> Signal<T> {
     signal
 }
 
-pub fn create_empty_signal<T>() -> Signal<T> {
+pub(crate) fn create_empty_signal<T>() -> Signal<T> {
     let root = Root::global();
     let id = root.nodes.borrow_mut().insert(ReactiveNode {
         value: None,

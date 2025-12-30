@@ -21,11 +21,11 @@ impl From<HTMLElement> for Element {
     }
 }
 
-pub type EventHandler = Box<dyn FnMut(web_sys::Event)>;
+pub type EventListener = Box<dyn Fn(web_sys::Event)>;
 
 pub struct HTMLElement {
     pub name: String,
     pub attributes: HashMap<String, String>,
-    pub event_handlers: HashMap<String, EventHandler>,
+    pub event_listeners: HashMap<String, EventListener>,
     pub children: Vec<Element>,
 }

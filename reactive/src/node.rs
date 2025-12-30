@@ -53,7 +53,7 @@ pub(crate) struct ReactiveNode {
 }
 
 #[derive(Clone, Copy)]
-pub(crate) struct NodeHandle(pub(crate) NodeId, pub(crate) &'static Root);
+pub struct NodeHandle(pub(crate) NodeId, pub(crate) &'static Root);
 
 impl NodeHandle {
     /// Disposes the node that is being referenced by this handle. If the node has already been

@@ -313,24 +313,24 @@ impl DependencyTracker {
 #[must_use = "root should be disposed"]
 pub fn create_root(f: impl FnOnce()) -> RootHandle {
     let _ref = Root::new_static();
-    #[cfg(not(target_arch = "wasm32"))]
-    {
-        /// An unsafe wrapper around a raw pointer which we promise to never touch, effectively
-        /// making it thread-safe.
-        #[allow(dead_code)]
-        struct UnsafeSendPtr<T>(*const T);
-        /// We never ever touch the pointer inside so surely this is safe!
-        unsafe impl<T> Send for UnsafeSendPtr<T> {}
+    // #[cfg(not(target_arch = "wasm32"))]
+    // {
+    //     /// An unsafe wrapper around a raw pointer which we promise to never touch, effectively
+    //     /// making it thread-safe.
+    //     #[allow(dead_code)]
+    //     struct UnsafeSendPtr<T>(*const T);
+    //     /// We never ever touch the pointer inside so surely this is safe!
+    //     unsafe impl<T> Send for UnsafeSendPtr<T> {}
 
-        /// A static variable to keep on holding to the allocated `Root`s to prevent Miri and
-        /// Valgrind from complaining.
-        static KEEP_ALIVE: std::sync::Mutex<Vec<UnsafeSendPtr<Root>>> =
-            std::sync::Mutex::new(Vec::new());
-        KEEP_ALIVE
-            .lock()
-            .unwrap()
-            .push(UnsafeSendPtr(_ref as *const Root));
-    }
+    //     /// A static variable to keep on holding to the allocated `Root`s to prevent Miri and
+    //     /// Valgrind from complaining.
+    //     static KEEP_ALIVE: std::sync::Mutex<Vec<UnsafeSendPtr<Root>>> =
+    //         std::sync::Mutex::new(Vec::new());
+    //     KEEP_ALIVE
+    //         .lock()
+    //         .unwrap()
+    //         .push(UnsafeSendPtr(_ref as *const Root));
+    // }
 
     Root::set_global(Some(_ref));
     NodeHandle(_ref.root_node.get(), _ref).run_in(f);

@@ -122,21 +122,21 @@ impl ToTokens for Node {
                     quote! {( String::from(#name), String::from(#value))}
                 });
 
-                let event_handlers = element.event_listeners.iter().map(|(name, expr)| {
+                let event_listeners = element.event_listeners.iter().map(|(name, expr)| {
                     let name = LitStr::new(&name.to_string(), name.span());
-                    quote! {( String::from(#name), Box::new(#expr) as rsx::EventHandler)}
+                    quote! {( String::from(#name), Box::new(#expr) as rsx::EventListener)}
                 });
 
                 let children = element
                     .children
                     .iter()
-                    .map(|c| quote! { rsx::Element::from(#c) });
+                    .map(|node| quote! { rsx::Element::from(#node) });
 
                 tokens.extend(quote! {
                     rsx::HTMLElement {
                         name: String::from(#name),
                         attributes: std::collections::HashMap::from([#(#attributes),*]),
-                        event_handlers: std::collections::HashMap::from([#(#event_handlers),*]),
+                        event_listeners: std::collections::HashMap::from([#(#event_listeners),*]),
                         children: vec![#(#children),*],
                     }
                 });
@@ -150,7 +150,5 @@ impl ToTokens for Node {
 #[proc_macro]
 pub fn rsx(input: TokenStream) -> TokenStream {
     let node = parse_macro_input!(input as Node);
-    let generated = quote! {{ rsx::Element::from(#node) }}.into();
-    // panic!("{}", &generated);
-    generated
+    quote! {{ rsx::Element::from(#node) }}.into()
 }

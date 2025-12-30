@@ -3,7 +3,7 @@ use web_sys::wasm_bindgen::{JsCast, intern, prelude::Closure};
 
 use crate::{document, node::dom_node::DomNode};
 
-pub fn render_to<C: FnOnce() -> rsx::Element>(component: C, parent: &web_sys::Node) {
+pub fn render_to<C: Fn() -> rsx::Element>(component: C, parent: &web_sys::Node) {
     // Do not call the destructor function, effectively leaking the scope.
     let _ = create_root(|| render_in_scope(component, parent));
 }
@@ -19,7 +19,7 @@ impl From<rsx::Element> for DomNode {
                     el.set_attribute(&name, &value).unwrap();
                 }
 
-                for (name, listener) in element.event_handlers {
+                for (name, listener) in element.event_listeners {
                     let closure = Closure::wrap(listener);
                     el.add_event_listener_with_callback(&name, closure.as_ref().unchecked_ref())
                         .unwrap();
@@ -42,7 +42,7 @@ impl From<rsx::Element> for DomNode {
     }
 }
 
-pub fn render_in_scope<C: FnOnce() -> rsx::Element>(component: C, parent: &web_sys::Node) {
+pub fn render_in_scope<C: Fn() -> rsx::Element>(component: C, parent: &web_sys::Node) {
     let root = DomNode::from(component());
     parent.append_child(&root.raw).unwrap();
 }
