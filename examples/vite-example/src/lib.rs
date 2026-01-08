@@ -13,7 +13,7 @@ fn app() -> rsx::Element {
 
     return rsx!(
         <main>
-            <h1>This is a RSX snippet</h1>
+            <h1>This is a RSX snippet {1} </h1>
             <button onclick={onclick} name="button">Click me and look at the console</button>
             // <div>{count.get().to_string()}</div>
         </main>

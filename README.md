@@ -39,6 +39,47 @@ This project is a reactive library built in Rust. Rust will be used to produce W
 ```mermaid
 flowchart TD;
     Rust-->|Compiles to|WebAssembly
-    WebAssembly-->|Bundled/built using|Vite
+    WebAssembly-->|Bundled / built using|Vite
     Vite-->|deliver Javascript|Browser
+```
+
+## Typical entrypoint
+
+In the Vite example, the program entry point is Rust WASM entry point located in [`src/main.ts`](/examples/vite-example/src/main.ts), this imports and run the built WASM programmed in [`src/lib.rs`](/examples/vite-example/src/lib.rs):
+
+```rust
+use wasm_bindgen::prelude::*;
+
+#[wasm_bindgen(start)]
+fn start() {
+    // ...
+}
+```
+
+This is where we import the libraries and start developping the interfaces using RSX.
+
+```rust
+// Import libraries
+use rsx::rsx;
+use rsx_web::{console_log, document, node::render_to};
+use wasm_bindgen::prelude::*;
+
+// Create component
+fn app() -> rsx::Element {
+    let onclick = move |_| console_log!("Hello from the WASM side !")
+
+    return rsx!(
+        <div class="container">Hello World</div>
+    );
+}
+
+#[wasm_bindgen(start)]
+fn start() {
+    let root = document()
+        .get_element_by_id("app")
+        .expect("#app is undefined");
+
+    render_to(app, &root); // Render the component it to the DOM
+}
+
 ```

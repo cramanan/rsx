@@ -9,9 +9,9 @@ pub enum Element {
     Text(String),
 }
 
-impl From<String> for Element {
-    fn from(value: String) -> Self {
-        Element::Text(value)
+impl<T: ToString> From<T> for Element {
+    fn from(value: T) -> Self {
+        Element::Text(value.to_string())
     }
 }
 
